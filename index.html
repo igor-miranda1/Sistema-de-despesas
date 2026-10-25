@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" type="image/svg+xml" href="/cifrao-verde.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Registre suas despesas e acompanhe seus gastos por categoria."
+    />
+    <meta name="theme-color" content="#f5f6f8" />
+    <title>Despesas — Painel financeiro</title>
+  </head>
+  <body>
+    <main class="auth-view" id="auth-view" hidden>
+      <section class="auth-card" aria-labelledby="auth-title">
+        <a class="brand auth-brand" href="#" aria-label="Despesas, início">
+          <img class="brand-logo" src="/cifrao-verde.svg" alt="" width="32" height="32" />
+          <span>despesas<span class="brand-period">.</span></span>
+        </a>
+        <p class="eyebrow page-eyebrow">CONTROLE FINANCEIRO</p>
+        <h1 id="auth-title">Acesse sua conta</h1>
+        <p class="auth-description">Entre para acompanhar seus lançamentos com segurança.</p>
+        <p class="auth-error" id="auth-error" role="alert" hidden></p>
+
+        <form id="login-form">
+          <div class="auth-fields">
+            <div class="field">
+              <label for="login-email">Email</label>
+              <input id="login-email" name="email" type="email" maxlength="160" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="login-password">Senha</label>
+              <input id="login-password" name="senha" type="password" autocomplete="current-password" required />
+            </div>
+          </div>
+          <button class="submit-button auth-submit" id="login-submit" type="submit">Entrar</button>
+        </form>
+
+        <form id="reset-request-form" hidden>
+          <div class="auth-fields">
+            <div class="field">
+              <label for="reset-email">Email cadastrado</label>
+              <input id="reset-email" name="email" type="email" maxlength="160" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="reset-password">Nova senha (mínimo de 8 caracteres)</label>
+              <input id="reset-password" name="senha" type="password" minlength="8" autocomplete="new-password" required />
+              <small class="password-hint">Evite números em sequência. Letras e caracteres especiais são recomendados, mas opcionais.</small>
+            </div>
+          </div>
+          <button class="submit-button auth-submit" id="reset-request-submit" type="submit">Redefinir senha</button>
+        </form>
+
+        <form id="register-form" hidden>
+          <div class="auth-fields">
+            <div class="field">
+              <label for="register-name">Nome</label>
+              <input id="register-name" name="nome" type="text" maxlength="80" autocomplete="name" required />
+            </div>
+            <div class="field">
+              <label for="register-email">Email</label>
+              <input id="register-email" name="email" type="email" maxlength="160" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="register-password">Senha (mínimo de 8 caracteres)</label>
+              <input id="register-password" name="senha" type="password" minlength="8" autocomplete="new-password" required />
+              <small class="password-hint">
+                Evite números em sequência (ex.: 12345678). Letras e caracteres especiais são recomendados, mas opcionais.
+              </small>
+            </div>
+          </div>
+          <button class="submit-button auth-submit" id="register-submit" type="submit">Criar conta</button>
+        </form>
+
+        <div class="auth-switch">
+          <span id="auth-switch-label">Ainda não tem uma conta?</span>
+          <button class="auth-switch-button" id="auth-switch-button" type="button">Criar conta</button>
+        </div>
+        <button class="auth-forgot-button" id="forgot-password-button" type="button">Esqueci minha senha</button>
+      </section>
+    </main>
+
+    <div class="app-shell" id="app-shell" hidden>
+      <aside class="sidebar" aria-label="Resumo das despesas">
+        <a class="brand" href="#" aria-label="Despesas, início">
+          <img class="brand-logo" src="/cifrao-verde.svg" alt="" width="32" height="32" />
+          <span>despesas<span class="brand-period">.</span></span>
+        </a>
+
+        <section class="total-card" aria-labelledby="total-title">
+          <p class="eyebrow">VISÃO GERAL</p>
+          <h2 id="total-title">Total de despesas</h2>
+          <p class="total-value" id="total-amount">R$ 0,00</p>
+          <p class="total-caption">soma de todos os lançamentos</p>
+        </section>
+
+        <section class="total-card summary-card" aria-labelledby="income-total-title">
+          <p class="eyebrow">ENTRADAS</p>
+          <h2 id="income-total-title">Total de receitas</h2>
+          <p class="total-value" id="income-amount">R$ 0,00</p>
+        </section>
+
+        <section class="total-card summary-card balance-card" aria-labelledby="balance-title">
+          <p class="eyebrow">RESULTADO</p>
+          <h2 id="balance-title">Saldo do período</h2>
+          <p class="total-value" id="balance-amount">R$ 0,00</p>
+          <p class="total-caption" id="balance-caption">Receitas menos despesas</p>
+        </section>
+
+        <section class="category-section" aria-labelledby="category-title">
+          <div class="section-heading">
+            <h2 id="category-title">Por categoria</h2>
+            <span class="category-count" id="category-count">10</span>
+          </div>
+          <ul class="category-list" id="category-totals"></ul>
+        </section>
+
+        <p class="sidebar-note">Seus dados são salvos no banco de dados.</p>
+      </aside>
+
+      <main class="main-content">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow page-eyebrow">CONTROLE FINANCEIRO</p>
+            <h1>Suas despesas</h1>
+            <p class="page-description">
+              Registre seus gastos e acompanhe para onde seu dinheiro vai.
+            </p>
+          </div>
+          <div class="header-actions">
+            <span class="user-name" id="user-name"></span>
+            <span class="session-badge">
+              <span class="status-dot" aria-hidden="true"></span>
+              Dados sincronizados
+            </span>
+            <button class="cancel-button logout-button" id="logout-button" type="button">Sair</button>
+            <button class="cancel-button logout-button" id="logout-all-button" type="button">Sair de todos os dispositivos</button>
+            <button class="cancel-button logout-button" id="export-account-button" type="button">Exportar meus dados</button>
+            <button class="cancel-button logout-button" id="delete-account-button" type="button">Excluir minha conta</button>
+          </div>
+        </header>
+
+        <nav class="view-tabs" role="tablist" aria-label="Visualização financeira">
+          <button
+            class="view-tab is-active"
+            id="dashboard-tab"
+            type="button"
+            role="tab"
+            aria-controls="dashboard-view"
+            aria-selected="true"
+          >
+            Painel
+          </button>
+          <button
+            class="view-tab"
+            id="charts-tab"
+            type="button"
+            role="tab"
+            aria-controls="charts-view"
+            aria-selected="false"
+            tabindex="-1"
+          >
+            Gráficos
+          </button>
+        </nav>
+
+        <div id="dashboard-view" role="tabpanel" aria-labelledby="dashboard-tab">
+        <section class="panel form-panel" aria-labelledby="form-title">
+          <div class="panel-heading">
+            <div class="heading-icon add-icon" aria-hidden="true">+</div>
+            <div>
+              <h2 id="form-title">Adicionar despesa</h2>
+              <p id="form-description">Preencha os dados do novo lançamento.</p>
+            </div>
+          </div>
+
+          <form id="expense-form" novalidate>
+            <div class="form-grid">
+              <div class="field field-title">
+                <label for="expense-title">Título</label>
+                <input
+                  id="expense-title"
+                  name="title"
+                  type="text"
+                  maxlength="120"
+                  placeholder="Ex.: Compras da semana"
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="field">
+                <label for="expense-amount">Valor</label>
+                <div class="input-with-prefix">
+                  <span aria-hidden="true">R$</span>
+                  <input
+                    id="expense-amount"
+                    name="amount"
+                    type="number"
+                    min="0.01"
+                    max="99999999.99"
+                    step="0.01"
+                    inputmode="decimal"
+                    placeholder="0,00"
+                  />
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="expense-category">Categoria</label>
+                <select id="expense-category" name="category">
+                  <option value="">Selecione</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="expense-date">Data</label>
+                <div class="date-picker-wrapper" data-date-picker-wrapper>
+                  <input id="expense-date" name="date" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" required />
+                  <button type="button" class="date-picker-open" data-date-picker-open aria-label="Abrir calendário">▣</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-footer">
+              <p class="form-error" id="form-error" role="alert" hidden></p>
+              <div class="form-actions">
+                <button class="cancel-button" id="cancel-edit" type="button" hidden>
+                  Cancelar edição
+                </button>
+                <button class="submit-button" type="submit">
+                  <span aria-hidden="true">+</span>
+                  Adicionar despesa
+                </button>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel form-panel" aria-labelledby="income-form-title">
+          <div class="panel-heading">
+            <div class="heading-icon income-icon" aria-hidden="true">↗</div>
+            <div>
+              <h2 id="income-form-title">Adicionar receita</h2>
+              <p id="income-form-description">Preencha os dados da nova receita.</p>
+            </div>
+          </div>
+
+          <form id="income-form" novalidate>
+            <div class="form-grid income-form-grid">
+              <div class="field field-title">
+                <label for="income-title">Título</label>
+                <input
+                  id="income-title"
+                  name="title"
+                  type="text"
+                  maxlength="120"
+                  placeholder="Ex.: Salário"
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="field">
+                <label for="income-amount-input">Valor</label>
+                <div class="input-with-prefix">
+                  <span aria-hidden="true">R$</span>
+                  <input
+                    id="income-amount-input"
+                    name="amount"
+                    type="number"
+                    min="0.01"
+                    max="99999999.99"
+                    step="0.01"
+                    inputmode="decimal"
+                    placeholder="0,00"
+                  />
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="income-date">Data</label>
+                <div class="date-picker-wrapper" data-date-picker-wrapper>
+                  <input id="income-date" name="date" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" required />
+                  <button type="button" class="date-picker-open" data-date-picker-open aria-label="Abrir calendário">▣</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-footer">
+              <p class="form-error" id="income-form-error" role="alert" hidden></p>
+              <div class="form-actions">
+                <button class="cancel-button" id="cancel-income-edit" type="button" hidden>
+                  Cancelar edição
+                </button>
+                <button class="submit-button income-submit" id="income-submit" type="submit">
+                  <span aria-hidden="true">+</span>
+                  Adicionar receita
+                </button>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel expenses-panel" aria-labelledby="income-list-title">
+          <div class="expenses-heading">
+            <div>
+              <h2 id="income-list-title">Receitas</h2>
+              <p>Suas receitas salvas no banco de dados.</p>
+            </div>
+            <span class="expense-count" id="income-count">0 itens</span>
+          </div>
+          <ul class="expense-list" id="income-list" aria-live="polite"></ul>
+        </section>
+
+        <section class="panel expenses-panel" aria-labelledby="expenses-title">
+          <div class="expenses-heading">
+            <div>
+              <h2 id="expenses-title">Lançamentos</h2>
+              <p id="expense-period-label">Outubro de 2026</p>
+            </div>
+            <div class="period-filter">
+              <div class="period-filter-title">
+                <span class="period-filter-icon" aria-hidden="true">◷</span>
+                <div>
+                  <label for="period-mode">Filtrar lançamentos</label>
+                  <small>Escolha um mês ou intervalo</small>
+                </div>
+              </div>
+              <select id="period-mode" name="period-mode" aria-label="Tipo de período">
+                <option value="month">Mês específico</option>
+                <option value="range">Intervalo personalizado</option>
+              </select>
+              <div class="period-month-control" id="period-month-control">
+                <button type="button" class="period-nav" id="period-previous" aria-label="Mês anterior">‹</button>
+                <label class="visually-hidden" for="expense-month">Mês</label>
+                <select id="expense-month" name="month" required>
+                  <option value="01">Janeiro</option>
+                  <option value="02">Fevereiro</option>
+                  <option value="03">Março</option>
+                  <option value="04">Abril</option>
+                  <option value="05">Maio</option>
+                  <option value="06">Junho</option>
+                  <option value="07">Julho</option>
+                  <option value="08">Agosto</option>
+                  <option value="09">Setembro</option>
+                  <option value="10">Outubro</option>
+                  <option value="11">Novembro</option>
+                  <option value="12">Dezembro</option>
+                </select>
+                <span>de</span>
+                <label class="visually-hidden" for="expense-year">Ano</label>
+                <input
+                  id="expense-year"
+                  name="year"
+                  type="number"
+                  min="1000"
+                  max="9999"
+                  step="1"
+                  inputmode="numeric"
+                  required
+                />
+                <button type="button" class="period-nav" id="period-next" aria-label="Próximo mês">›</button>
+              </div>
+              <div class="period-shortcuts" aria-label="Atalhos de período">
+                <button type="button" data-period-shortcut="current">Este mês</button>
+                <button type="button" data-period-shortcut="previous">Mês passado</button>
+                <button type="button" data-period-shortcut="30days">Últimos 30 dias</button>
+                <button type="button" data-period-shortcut="year">Este ano</button>
+                <button type="button" data-period-shortcut="custom">Personalizado</button>
+              </div>
+              <div class="period-range-control" id="period-range-control" hidden>
+                <label for="period-start">De</label>
+                <div class="date-picker-wrapper" data-date-picker-wrapper>
+                  <input id="period-start" name="period-start" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" aria-label="Data inicial" />
+                  <button type="button" class="date-picker-open" data-date-picker-open aria-label="Abrir calendário">▣</button>
+                </div>
+                <span aria-hidden="true">até</span>
+                <label for="period-end">Até</label>
+                <div class="date-picker-wrapper" data-date-picker-wrapper>
+                  <input id="period-end" name="period-end" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" aria-label="Data final" />
+                  <button type="button" class="date-picker-open" data-date-picker-open aria-label="Abrir calendário">▣</button>
+                </div>
+              </div>
+            </div>
+            <span class="expense-count" id="expense-count" role="status">Nenhuma despesa</span>
+          </div>
+          <p class="api-status" id="api-status" role="status" aria-live="polite">
+            Carregando despesas...
+          </p>
+          <ul class="expense-list" id="expense-list" aria-live="polite"></ul>
+        </section>
+
+        <footer class="page-footer">
+          <span>Organização simples, escolhas mais conscientes.</span>
+          <span>Seus dados são salvos no banco.</span>
+        </footer>
+        </div>
+
+        <section
+          class="charts-view"
+          id="charts-view"
+          role="tabpanel"
+          aria-labelledby="charts-tab"
+          hidden
+        >
+          <div class="panel chart-panel">
+            <div class="expenses-heading chart-heading">
+              <div>
+                <h2>Entradas e saídas</h2>
+                <p>Compare receitas, despesas e saldo mês a mês.</p>
+              </div>
+              <div class="chart-period-control">
+                <label for="chart-month-count">Período</label>
+                <select id="chart-month-count">
+                  <option value="6">Últimos 6 meses</option>
+                  <option value="12">Últimos 12 meses</option>
+                </select>
+              </div>
+            </div>
+            <p class="chart-status" id="chart-status" role="status" aria-live="polite" hidden></p>
+            <div class="chart-empty-state" id="chart-empty-state" hidden>
+              Sem movimentações neste período.
+            </div>
+            <div class="chart-canvas-container" id="chart-canvas-container" hidden>
+              <canvas id="monthly-chart" aria-label="Gráfico mensal de receitas, despesas e saldo"></canvas>
+            </div>
+          </div>
+
+          <div class="panel chart-table-panel" id="chart-table-panel" hidden>
+            <h2>Resumo mensal</h2>
+            <div class="chart-table-scroll">
+              <table class="chart-table">
+                <caption class="visually-hidden">Receitas, despesas e saldo por mês</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Mês</th>
+                    <th scope="col">Receitas</th>
+                    <th scope="col">Despesas</th>
+                    <th scope="col">Saldo</th>
+                  </tr>
+                </thead>
+                <tbody id="chart-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,51 @@
+{
+  "name": "primeiro-projeto-vite",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:web": "vite",
+    "dev:api": "tsx watch server/src/index.ts",
+    "migrate": "tsx server/src/migrate.ts",
+    "db:app-user": "tsx server/scripts/db-app-user.ts",
+    "test:shell-line-endings": "tsx server/scripts/shell-line-endings-test.ts",
+    "gen:secret": "tsx server/scripts/gen-secret.ts",
+    "audit": "npm audit",
+    "test:security": "tsx server/scripts/security-test.ts",
+    "test:dates": "tsx --test server/scripts/date-utils-test.ts",
+    "dev:all": "npm run dev",
+    "build:api": "tsc -p server/tsconfig.json",
+    "start:api": "node server/dist/index.js",
+    "smoke-test": "tsx server/scripts/smoke-test.ts",
+    "build": "npm run build:api && tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.6.5",
+    "@types/nodemailer": "^8.0.2",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.2",
+    "vite": "8.3.3"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "chart.js": "^4.5.1",
+    "concurrently": "^10.0.6",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.24.6",
+    "nodemailer": "^10.2.0",
+    "zod": "^4.6.7"
+  },
+  "overrides": {
+    "body-parser": "2.4.0"
+  }
+}

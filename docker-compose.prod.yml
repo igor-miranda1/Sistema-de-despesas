@@ -1,0 +1,76 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${DB_APP_USER}
+      MYSQL_PASSWORD: ${DB_APP_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql-prod-data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+      - ./db/02-create-users.sh:/docker-entrypoint-initdb.d/002-create-users.sh:ro
+    networks: [internal]
+
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      API_PORT: 3001
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      DB_APP_USER: ${DB_APP_USER}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      RESET_CODE_SECRET: ${RESET_CODE_SECRET}
+      EMAIL_TRANSPORT: ${EMAIL_TRANSPORT}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      EMAIL_FROM: ${EMAIL_FROM}
+      EMAIL_DAILY_CAP: ${EMAIL_DAILY_CAP}
+      EMAIL_DNS_CHECK: ${EMAIL_DNS_CHECK}
+      EMAIL_ALLOW_TEST_DOMAINS: ${EMAIL_ALLOW_TEST_DOMAINS}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      TRUST_PROXY: ${TRUST_PROXY}
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    networks: [internal]
+
+  migrator:
+    build: .
+    restart: "no"
+    env_file: .env.prod
+    command: ["node", "server/dist/migrate.js"]
+    depends_on:
+      mysql:
+        condition: service_started
+    networks: [internal]
+
+  caddy:
+    image: caddy:2.9.1-alpine
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [api]
+    networks: [internal]
+
+networks:
+  internal:
+
+volumes:
+  mysql-prod-data:
+  caddy-data:
+  caddy-config:
